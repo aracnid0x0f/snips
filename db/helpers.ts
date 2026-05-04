@@ -28,7 +28,7 @@ export function CreateCustomer(
 
 export function GetAllCustomers() {
     return db.getAllSync(`
-            SELECT * from customers ODRER BY created_at DESC;
+            SELECT * from customers ORDER BY created_at DESC;
         `)
 }
 
@@ -47,7 +47,7 @@ export function UpdateCustomer(
 ) {
     db.runSync(`
             UPDATE customers SET name = ?, phone = ?, gender = ?, age_group = ? WHERE id = ?;
-        `, name, phone, gender, age_group, id)
+        `, [name, phone, gender, age_group, id])
 }
 
 export function DeleteCustomer(id: number) {
@@ -62,14 +62,14 @@ export function upsertMeasurment(
     table: 'female_measurements' | 'male_measurements',
     customer_id: number,
     fields: Record<string, number | null>,
-    custom_fields: string = '[}',
+    custom_fields: string = '[]',
 ) {
     const keys = Object.keys(fields)
     const values = Object.values(fields)
 
     const columns = ['customer_id', ...keys, 'custom_fields'].join(', ')
     const placeholders = ['?', ...keys.map(() => '?'), '?'].join(', ')
-    const updates = keys.map((k) => `S{k} = excluded.${k}`).join(', ')
+    const updates = keys.map((k) => `${k} = excluded.${k}`).join(', ')
 
     db.runSync(`
             INSERT INTO ${table} (${columns}) VALUEs (${placeholders})
@@ -84,8 +84,8 @@ export function getMeasurment(
     customer_id: number,
 ) {
     return db.getFirstSync(`
-            SELECT * FROM ? WHERE customer_id = ?;
-        `, [table, customer_id])
+            SELECT * FROM ${table} WHERE customer_id = ?;
+        `, [customer_id])
 }
 
 // Cloth relate functions
@@ -103,14 +103,14 @@ export function CreateCloth(
 }
 
 export function GetClothByCustomer(customer_id: number) {
-    return db.getFirstSync(`
+    return db.getAllSync(`
             SELECT * FROM cloths WHERE customer_id = ?
-            ORDER BY due_date DESC;
+            ORDER BY due_date ASC;
         `, [customer_id])
 }
 
 export function GetClothById(id: number) {
-    return db.runSync(`
+    return db.getFirstSync(`
             SELECT * FROM cloths WHERE id = ?;
         `, [id])
 }
@@ -120,8 +120,8 @@ export function UpdateClothStatus(
     status: 'untouched' | 'cut' | 'sewn' | 'ready' | 'overdue'
 ) {
     db.runSync(`
-            UPDATE cloths SET status = ${status} WHERE id = ?;
-        `, [id])
+            UPDATE cloths SET status = ? WHERE id = ?;
+        `, [status, id])
 }
 
 export function DeleteCloth(id: number) {
@@ -151,7 +151,7 @@ export function GetActiveClothGroupedByCustomer() {
     return db.getAllSync(`
             SELECT cloths.*, customers.name as customer_name
             FROM cloths
-            JOIN customers ON cloths.customer_id = customer_id
+            JOIN customers ON cloths.customer_id = customer.id
             WHERE cloths.status != 'ready'
             ORDER BY cloths.due_date DESC; 
         `)

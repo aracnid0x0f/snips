@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-nativ
 import { useNavigation, DrawerActions } from '@react-navigation/native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Colors, Fonts, Spacing } from '@/constants/theme'
+import { Image } from 'react-native'
+
 
 type TopBarProps = {
   searchValue?: string
@@ -19,7 +21,10 @@ export default function TopBar({
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      <Text style={styles.logo}>Snips</Text>
+      <Image
+        source={require('@/assets/images/logo.png')}
+        style={{ width: 30, height: 30, borderRadius: 6 }}
+      />
       <View style={styles.right}>
         <View style={styles.searchBar}>
           <TextInput

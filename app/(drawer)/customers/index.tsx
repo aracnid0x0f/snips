@@ -1,19 +1,25 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
-  Alert,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native'
 import { router } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { MaterialIcons } from '@expo/vector-icons'
 
 import DrawerScreen from '@/components/DrawerScreen'
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
-import { CreateCustomer, GetAllCustomers } from '@/db/helpers'
+import { GetAllCustomers, GetClothByCustomer } from '@/db/helpers'
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true)
+}
 
 type CustomerRecord = {
   id: number
@@ -23,24 +29,26 @@ type CustomerRecord = {
   age_group: string
 }
 
-const GENDER_OPTIONS = [
-  { label: 'Women', value: 'female' },
-  { label: 'Men', value: 'male' },
-  { label: 'Both', value: 'both' },
-] as const
+type ClothRecord = {
+  id: number
+  title: string
+  status: 'untouched' | 'cut' | 'sewn' | 'ready' | 'overdue'
+  due_date: string | null
+}
 
-const AGE_GROUP_OPTIONS = [
-  { label: 'Adult', value: 'adult' },
-  { label: 'Child', value: 'child' },
-] as const
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  untouched: { bg: '#E5E7EB', text: '#374151' },
+  cut: Colors.status.cut,
+  sewn: Colors.status.sewn,
+  ready: Colors.status.ready,
+  overdue: Colors.status.overdue,
+}
 
 export default function Customers() {
   const [customers, setCustomers] = useState<CustomerRecord[]>([])
   const [search, setSearch] = useState('')
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [gender, setGender] = useState<(typeof GENDER_OPTIONS)[number]['value']>('female')
-  const [ageGroup, setAgeGroup] = useState<(typeof AGE_GROUP_OPTIONS)[number]['value']>('adult')
+  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [activeCloths, setPlatformActiveCloths] = useState<Record<number, ClothRecord[]>>({})
 
   const loadCustomers = useCallback(() => {
     const rows = GetAllCustomers() as CustomerRecord[]
@@ -53,34 +61,27 @@ export default function Customers() {
     }, [loadCustomers])
   )
 
-  const filteredCustomers = customers.filter((customer) => {
+  const filteredCustomers = useMemo(() => {
     const query = search.trim().toLowerCase()
+    if (!query) return customers
 
-    if (!query) {
-      return true
+    return customers.filter((customer) =>
+      [customer.name, customer.phone ?? '', customer.gender, customer.age_group]
+        .some((value) => value.toLowerCase().includes(query))
+    )
+  }, [customers, search])
+
+  const toggleExpand = (id: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    if (expandedId === id) {
+      setExpandedId(null)
+    } else {
+      setExpandedId(id)
+      // Fetch cloths for this customer if not already fetched or to refresh
+      const cloths = GetClothByCustomer(id) as ClothRecord[]
+      const onlyActive = cloths.filter(c => c.status !== 'ready')
+      setPlatformActiveCloths(prev => ({ ...prev, [id]: onlyActive }))
     }
-
-    return [customer.name, customer.phone ?? '', customer.gender, customer.age_group]
-      .some((value) => value.toLowerCase().includes(query))
-  })
-
-  function handleCreateCustomer() {
-    const trimmedName = name.trim()
-    const trimmedPhone = phone.trim()
-
-    if (!trimmedName) {
-      Alert.alert('Missing name', 'Enter a customer name before saving.')
-      return
-    }
-
-    const id = Number(CreateCustomer(trimmedName, trimmedPhone, gender, ageGroup))
-
-    setName('')
-    setPhone('')
-    setGender('female')
-    setAgeGroup('adult')
-    loadCustomers()
-    router.push(`/(drawer)/customers/${id}`)
   }
 
   return (
@@ -96,79 +97,6 @@ export default function Customers() {
         extraScrollHeight={24}
         keyboardShouldPersistTaps='handled'
       >
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Add customer</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder='Customer name'
-            placeholderTextColor='rgba(0, 0, 0, 0.45)'
-            style={styles.input}
-          />
-          <TextInput
-            value={phone}
-            onChangeText={setPhone}
-            placeholder='Phone number'
-            placeholderTextColor='rgba(0, 0, 0, 0.45)'
-            keyboardType='phone-pad'
-            style={styles.input}
-          />
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Gender mode</Text>
-            <View style={styles.pillRow}>
-              {GENDER_OPTIONS.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.pill,
-                    gender === option.value && styles.pillSelected,
-                  ]}
-                  onPress={() => setGender(option.value)}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      gender === option.value && styles.pillTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Age group</Text>
-            <View style={styles.pillRow}>
-              {AGE_GROUP_OPTIONS.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.pill,
-                    ageGroup === option.value && styles.pillSelected,
-                  ]}
-                  onPress={() => setAgeGroup(option.value)}
-                >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      ageGroup === option.value && styles.pillTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} onPress={handleCreateCustomer}>
-            <Text style={styles.primaryButtonText}>Save customer</Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.listHeader}>
           <Text style={styles.sectionTitle}>Customer list</Text>
           <Text style={styles.countText}>{filteredCustomers.length} total</Text>
@@ -181,26 +109,70 @@ export default function Customers() {
             </Text>
             <Text style={styles.emptyBody}>
               {customers.length === 0
-                ? 'Add your first customer to start saving measurements and jobs.'
+                ? 'Add your first customer using the FAB button below.'
                 : 'Try another name, phone number, or filter term.'}
             </Text>
           </View>
         ) : (
           <View style={styles.list}>
             {filteredCustomers.map((customer) => (
-              <TouchableOpacity
-                key={customer.id}
-                style={styles.customerRow}
-                onPress={() => router.push(`/(drawer)/customers/${customer.id}`)}
-              >
-                <View style={styles.customerText}>
-                  <Text style={styles.customerName}>{customer.name}</Text>
-                  <Text style={styles.customerMeta}>
-                    {formatMeta(customer.gender, customer.age_group, customer.phone)}
-                  </Text>
-                </View>
-                <Text style={styles.rowAction}>Open</Text>
-              </TouchableOpacity>
+              <View key={customer.id} style={styles.customerCard}>
+                <TouchableOpacity
+                  style={styles.customerRow}
+                  onPress={() => toggleExpand(customer.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.customerText}>
+                    <Text style={styles.customerName}>{customer.name}</Text>
+                    <Text style={styles.customerMeta}>
+                      {formatMeta(customer.gender, customer.age_group, customer.phone)}
+                    </Text>
+                  </View>
+                  <View style={styles.rowActions}>
+                    <TouchableOpacity 
+                        onPress={() => router.push(`/(drawer)/customers/${customer.id}`)}
+                        style={styles.profileBtn}
+                    >
+                        <Text style={styles.profileBtnText}>Profile</Text>
+                    </TouchableOpacity>
+                    <MaterialIcons 
+                        name={expandedId === customer.id ? "expand-less" : "expand-more"} 
+                        size={24} 
+                        color={Colors.brand.text} 
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {expandedId === customer.id && (
+                  <View style={styles.expandedContent}>
+                    <Text style={styles.subLabel}>Active Cloths</Text>
+                    {(activeCloths[customer.id]?.length ?? 0) === 0 ? (
+                      <Text style={styles.emptySubText}>No active jobs for this customer.</Text>
+                    ) : (
+                      activeCloths[customer.id].map(cloth => (
+                        <TouchableOpacity 
+                          key={cloth.id} 
+                          style={styles.clothItem}
+                          onPress={() => router.push(`/(drawer)/cloths/${cloth.id}`)}
+                        >
+                          <Text style={styles.clothTitle}>{cloth.title}</Text>
+                          <View style={[styles.statusPill, { backgroundColor: STATUS_COLORS[cloth.status]?.bg ?? '#eee' }]}>
+                            <Text style={[styles.statusText, { color: STATUS_COLORS[cloth.status]?.text ?? '#333' }]}>
+                              {cloth.status.toUpperCase()}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                    <TouchableOpacity 
+                      style={styles.addClothSmall}
+                      onPress={() => router.push('/cloths/create')}
+                    >
+                      <Text style={styles.addClothSmallText}>+ New Cloth</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             ))}
           </View>
         )}
@@ -211,11 +183,7 @@ export default function Customers() {
 
 function formatMeta(gender: string, ageGroup: string, phone: string | null) {
   const parts = [capitalize(gender), capitalize(ageGroup)]
-
-  if (phone) {
-    parts.push(phone)
-  }
-
+  if (phone) parts.push(phone)
   return parts.join(' • ')
 }
 
@@ -228,76 +196,10 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
     paddingBottom: Spacing.xxl,
   },
-  card: {
-    backgroundColor: '#FBF6DE',
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    gap: Spacing.md,
-  },
   sectionTitle: {
     fontFamily: Fonts.display,
     fontSize: 24,
     color: Colors.brand.text,
-  },
-  input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: '#F6EFD2', 
-    fontSize: 16,
-    color: Colors.brand.text,
-  },
-  fieldGroup: {
-    gap: Spacing.sm,
-  },
-  fieldLabel: {
-    fontFamily: Fonts.body,
-    fontSize: 18,
-    color: Colors.brand.text,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  pill: {
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
-    borderRadius: Radius.full,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: '#FFFBEF',
-  },
-  pillSelected: {
-    backgroundColor: Colors.brand.text,
-    borderColor: Colors.brand.text,
-  },
-  pillText: {
-    fontFamily: Fonts.body,
-    fontSize: 18,
-    color: Colors.brand.text,
-  },
-  pillTextSelected: {
-    color: Colors.brand.background,
-  },
-  primaryButton: {
-    marginTop: Spacing.xs,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.brand.primary,
-    borderRadius: Radius.md,
-    minHeight: 50,
-    paddingHorizontal: Spacing.lg,
-  },
-  primaryButtonText: {
-    fontFamily: Fonts.body,
-    fontSize: 20,
-    color: '#FFFFFF',
   },
   listHeader: {
     flexDirection: 'row',
@@ -332,15 +234,18 @@ const styles = StyleSheet.create({
   list: {
     gap: Spacing.md,
   },
+  customerCard: {
+    backgroundColor: '#FFFBEF',
+    borderWidth: 1,
+    borderColor: Colors.brand.border,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+  },
   customerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
     padding: Spacing.lg,
-    backgroundColor: '#FFFBEF',
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
-    borderRadius: Radius.lg,
   },
   customerText: {
     flex: 1,
@@ -348,17 +253,84 @@ const styles = StyleSheet.create({
   },
   customerName: {
     fontFamily: Fonts.display,
-    fontSize: 24,
+    fontSize: 26,
     color: Colors.brand.text,
   },
   customerMeta: {
     fontFamily: Fonts.body,
     fontSize: 18,
-    color: 'rgba(0, 0, 0, 0.75)',
+    color: 'rgba(0, 0, 0, 0.6)',
   },
-  rowAction: {
+  rowActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  profileBtn: {
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+    borderWidth: 0.5,
+    borderColor: Colors.brand.border,
+  },
+  profileBtnText: {
+    fontFamily: Fonts.body,
+    fontSize: 16,
+    color: Colors.brand.text,
+  },
+  expandedContent: {
+    padding: Spacing.lg,
+    paddingTop: 0,
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(226, 221, 180, 0.5)',
+    backgroundColor: 'rgba(251, 246, 222, 0.4)',
+  },
+  subLabel: {
+    fontFamily: Fonts.body,
+    fontSize: 14,
+    color: 'rgba(0,0,0,0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  clothItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(226, 221, 180, 0.8)',
+  },
+  clothTitle: {
     fontFamily: Fonts.body,
     fontSize: 18,
-    color: Colors.brand.primary,
+    color: Colors.brand.text,
   },
+  statusPill: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  statusText: {
+    fontFamily: Fonts.body,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptySubText: {
+    fontFamily: Fonts.body,
+    fontSize: 16,
+    color: 'rgba(0,0,0,0.3)',
+    fontStyle: 'italic',
+  },
+  addClothSmall: {
+    marginTop: Spacing.md,
+    alignSelf: 'flex-start',
+  },
+  addClothSmallText: {
+    fontFamily: Fonts.body,
+    fontSize: 16,
+    color: Colors.brand.primary,
+  }
 })

@@ -16,14 +16,20 @@ export function initDatabase() {
 export function CreateCustomer(
     name:string,
     phone: string,
-    gender: string,
+    gender: 'male' | 'female' | 'both',
     age_group: string
 ) {
     const result = db.runSync(`
             INSERT INTO customers (name, phone, gender, age_group) VALUES(?, ?, ?, ?);
         `, [name, phone, gender, age_group])
 
-        return result.lastInsertRowId
+    const customerId = result.lastInsertRowId
+
+    // Initialize blank measurements based on gender
+    const measurementTable = gender === 'female' ? 'female_measurements' : 'male_measurements'
+    db.runSync(`INSERT INTO ${measurementTable} (customer_id) VALUES (?);`, [customerId])
+
+    return customerId
 }
 
 export function GetAllCustomers() {
@@ -93,9 +99,28 @@ export function CreateCloth(
     customer_id: number,
     title: string,
     status: 'untouched' | 'cut' | 'sewn' | 'ready' | 'overdue',
-    due_date: string,
-    measurement_snapshot: string
+    due_date: string
 ) {
+    // 1. Get customer to know gender
+    const customer = GetCustomer(customer_id) as any
+    if (!customer) throw new Error("Customer not found")
+
+    // 2. Fetch current measurements
+    const table = customer.gender === 'female' ? 'female_measurements' : 'male_measurements'
+    const measurements = db.getFirstSync(`SELECT * FROM ${table} WHERE customer_id = ?`, [customer_id]) as any
+    
+    // 3. Create snapshot (remove internal DB fields)
+    const snapshot = { ...measurements }
+    delete snapshot.id
+    delete snapshot.customer_id
+    delete snapshot.updated_at
+
+    const measurement_snapshot = JSON.stringify({
+        gender: customer.gender,
+        measurements: snapshot,
+        captured_at: new Date().toISOString()
+    })
+
     const result = db.runSync(`
             INSERT INTO cloths (customer_id, title, status, due_date, measurement_snapshot)
             VALUES (?, ?, ?, ?, ?);

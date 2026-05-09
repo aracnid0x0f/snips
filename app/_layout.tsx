@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Caveat_400Regular } from '@expo-google-fonts/caveat'
 
 import { PreferencesProvider } from '@/context/PreferencesContext'
+import { FABProvider } from '@/context/FABContext'
 import { initDatabase } from '@/db/helpers'
 
 SplashScreen.preventAutoHideAsync()
@@ -43,13 +44,15 @@ export default function RootLayout() {
 
     return (
         <PreferencesProvider>
-            <Stack screenOptions={{ headerShown: false}}>
-                {
-                    onboardingDone
-                        ? ( <Stack.Screen name='(drawer)' />)
-                        : (<Stack.Screen name='onboarding'/>) 
-                }
-            </Stack>
+            <FABProvider>
+                <Stack screenOptions={{ headerShown: false}}>
+                    {
+                        onboardingDone
+                            ? ( <Stack.Screen name='(drawer)' />)
+                            : (<Stack.Screen name='onboarding'/>) 
+                    }
+                </Stack>
+            </FABProvider>
         </PreferencesProvider>
     )
 }

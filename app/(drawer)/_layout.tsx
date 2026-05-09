@@ -1,10 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {Image } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Drawer } from 'expo-router/drawer'
 import { DrawerContentComponentProps, DrawerContentScrollView } from '@react-navigation/drawer'
 import { MaterialIcons } from '@expo/vector-icons'
 
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
+import FAB from '@/components/FAB'
 
 const DRAWER_ITEMS = [
   { label: 'Queue', route: 'index', icon: 'schedule' as const },
@@ -34,12 +36,16 @@ export default function DrawerLayout() {
       >
         <Drawer.Screen name='index' options={{ drawerLabel: 'Queue' }} />
         <Drawer.Screen name='customers/index' options={{ drawerLabel: 'Customers' }} />
+        <Drawer.Screen name='customers/create' options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name='collections/index' options={{ drawerLabel: 'Collections' }} />
+        <Drawer.Screen name='collections/create' options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name='settings' options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name='customers/[id]' options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name='collections/[id]' options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name='cloths/create' options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name='cloths/[id]' options={{ drawerItemStyle: { display: 'none' } }} />
       </Drawer>
+      <FAB />
     </GestureHandlerRootView>
   )
 }
@@ -54,9 +60,13 @@ function CustomDrawerContent({ navigation, state }: DrawerContentComponentProps)
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.drawerHeader}>
-          <View style={styles.logoBadge}>
+          {/* <View style={styles.logoBadge}>
             <MaterialIcons name='content-cut' size={20} color='#FFFFFF' />
-          </View>
+          </View> */}
+          <Image
+                source={require('@/assets/images/logo.png')}
+                style={{ width: 30, height: 30, borderRadius: 6 }}
+              />
           <View style={styles.headerText}>
             <Text style={styles.brandTitle}>Snips</Text>
             <Text style={styles.brandSubtitle}>Tailor flow, organized.</Text>
@@ -149,8 +159,8 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: Radius.lg,
     backgroundColor: '#FBF6DE',
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
+    // borderWidth: 1,
+    // borderColor: Colors.brand.border,`
   },
   logoBadge: {
     width: 46,
@@ -232,6 +242,6 @@ const styles = StyleSheet.create({
   },
   settingsItem: {
     backgroundColor: '#FBF6DE',
-    borderColor: Colors.brand.border,
+    // borderColor: Colors.brand.border,
   },
 })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Alert,
   StyleSheet,
@@ -497,13 +497,6 @@ function MeasurementInputRow({
       />
     </View>
   )
-}
-
-function prettifyKey(value: string) {
-  return value
-    .split('_')
-    .map((part) => capitalize(part))
-    .join(' ')
 }
 
 function capitalize(value: string) {

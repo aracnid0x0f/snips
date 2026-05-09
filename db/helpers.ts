@@ -92,13 +92,14 @@ export function getMeasurment(
 export function CreateCloth(
     customer_id: number,
     title: string,
+    status: 'untouched' | 'cut' | 'sewn' | 'ready' | 'overdue',
     due_date: string,
     measurement_snapshot: string
 ) {
     const result = db.runSync(`
-            INSERT INTO cloths (customer_id, title, due_date, measurement_snapshot)
-            VALUES (?, ?, ?, ?);
-        `, [customer_id, title, due_date, measurement_snapshot])
+            INSERT INTO cloths (customer_id, title, status, due_date, measurement_snapshot)
+            VALUES (?, ?, ?, ?, ?);
+        `, [customer_id, title, status, due_date, measurement_snapshot])
     return result.lastInsertRowId
 }
 
@@ -151,7 +152,7 @@ export function GetActiveClothGroupedByCustomer() {
     return db.getAllSync(`
             SELECT cloths.*, customers.name as customer_name
             FROM cloths
-            JOIN customers ON cloths.customer_id = customer.id
+            JOIN customers ON cloths.customer_id = customers.id
             WHERE cloths.status != 'ready'
             ORDER BY cloths.due_date DESC; 
         `)

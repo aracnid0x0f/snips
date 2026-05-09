@@ -3,7 +3,7 @@ export const Colors = {
     primary: '#E43636',
     background: '#F6EFD2',
     border: '#E2DDB4',
-    text: '#000000',
+    text: '#2D2825',
   },
   status: {
     cut: { bg: '#FDE68A', text: '#92400E' },

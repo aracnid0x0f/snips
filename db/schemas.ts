@@ -54,7 +54,7 @@ export const CREATE_CLOTHS_TABLE = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
     title TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'cut',
+    status TEXT NOT NULL DEFAULT 'untouched',
     due_date TEXT,
     fabric_photo_uri TEXT,
     design_ref_uri TEXT,

@@ -1,17 +1,36 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
 import { useNavigation, DrawerActions } from '@react-navigation/native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Colors, Fonts, Spacing } from '@/constants/theme'
 
-export default function TopBar() {
+type TopBarProps = {
+  searchValue?: string
+  onSearchChange?: (value: string) => void
+  searchPlaceholder?: string
+}
+
+export default function TopBar({
+  searchValue = '',
+  onSearchChange,
+  searchPlaceholder = 'Search customers, cloths...',
+}: TopBarProps) {
   const navigation = useNavigation()
+  const insets = useSafeAreaInsets()
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
       <Text style={styles.logo}>Snips</Text>
       <View style={styles.right}>
-        <TouchableOpacity style={styles.searchBar}>
-          <Text style={styles.searchText}>Search customers, cloths...</Text>
-        </TouchableOpacity>
+        <View style={styles.searchBar}>
+          <TextInput
+            value={searchValue}
+            onChangeText={onSearchChange}
+            placeholder={searchPlaceholder}
+            placeholderTextColor='rgba(0, 0, 0, 0.5)'
+            editable={Boolean(onSearchChange)}
+            style={styles.searchInput}
+          />
+        </View>
         <TouchableOpacity
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
           style={styles.hamburger}
@@ -30,15 +49,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 0.5,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
     borderBottomColor: Colors.brand.border,
     backgroundColor: Colors.brand.background,
     gap: Spacing.md,
   },
   logo: {
     fontFamily: Fonts.display,
-    fontSize: 20,
+    fontSize: 30,
     color: Colors.brand.text,
   },
   right: {
@@ -50,23 +69,24 @@ const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
     backgroundColor: Colors.brand.border,
-    borderRadius: 20,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    borderRadius: 24,
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
   },
-  searchText: {
+  searchInput: {
     fontFamily: Fonts.body,
-    fontSize: 13,
+    fontSize: 16,
     color: Colors.brand.text,
-    opacity: 0.5,
+    padding: 0,
   },
   hamburger: {
-    gap: 4,
-    padding: Spacing.xs,
+    gap: 5,
+    padding: Spacing.sm,
   },
   line: {
-    width: 20,
-    height: 1.5,
+    width: 24,
+    height: 2.5,
     backgroundColor: Colors.brand.text,
     borderRadius: 2,
   },

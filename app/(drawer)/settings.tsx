@@ -1,14 +1,20 @@
-import { View, Text } from 'react-native'
-import TopBar from '@/components/TopBar'
+import { Text, StyleSheet } from 'react-native'
+
+import DrawerScreen from '@/components/DrawerScreen'
 import { Colors, Fonts } from '@/constants/theme'
 
 export default function Settings() {
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.brand.background }}>
-      <TopBar />
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontFamily: Fonts.body, fontSize: 20 }}>Settings</Text>
-      </View>
-    </View>
+    <DrawerScreen title='Settings'>
+      <Text style={styles.body}>Preferences, tailoring details, and app controls belong here.</Text>
+    </DrawerScreen>
   )
 }
+
+const styles = StyleSheet.create({
+  body: {
+    fontFamily: Fonts.body,
+    fontSize: 22,
+    color: Colors.brand.text,
+  },
+})

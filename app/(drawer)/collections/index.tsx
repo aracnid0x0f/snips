@@ -1,10 +1,20 @@
-import { View, Text } from 'react-native'
+import { Text, StyleSheet } from 'react-native'
+
+import DrawerScreen from '@/components/DrawerScreen'
 import { Colors, Fonts } from '@/constants/theme'
 
 export default function Collections() {
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.brand.background, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontFamily: Fonts.body, fontSize: 20 }}>Collections</Text>
-    </View>
+    <DrawerScreen title='Collections'>
+      <Text style={styles.body}>Track grouped pickups and delivery status here.</Text>
+    </DrawerScreen>
   )
 }
+
+const styles = StyleSheet.create({
+  body: {
+    fontFamily: Fonts.body,
+    fontSize: 22,
+    color: Colors.brand.text,
+  },
+})

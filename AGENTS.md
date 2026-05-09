@@ -8,6 +8,8 @@ Run `bun install` if dependencies are missing. Use `bun run start` to launch the
 
 ## Coding Style & Naming Conventions
 This project uses TypeScript with `strict` mode enabled and the `@/*` path alias from [tsconfig.json](/abs/path/C:/Users/aracnid/Documents/js-projects/snips/tsconfig.json). Follow the existing codebase style: functional React components, single quotes, and semicolon-free statements. Prefer PascalCase for components (`TopBar.tsx`, `PreferencesProvider`), camelCase for variables/functions, and UPPER_SNAKE_CASE for exported SQL constants in `db/schemas.ts`. Keep route file names aligned with Expo Router conventions, including dynamic segments like `customers/[id].tsx`.
+For all date inputs in the app, use a calendar date-picker UI. Do not use free-text date entry fields.
+For all form screens, use keyboard-aware containers so focused inputs stay visible when the keyboard opens.
 
 ## Testing Guidelines
 There is no automated test suite yet. For now, treat `bun run lint` as the minimum quality gate and manually verify affected flows in Expo Go or a simulator. When adding tests later, place them beside the feature or in a local `__tests__/` folder and use `*.test.ts` or `*.test.tsx` naming.

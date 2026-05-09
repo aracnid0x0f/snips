@@ -3,8 +3,9 @@ import { Stack } from 'expo-router'
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Caveat_400Regular } from '@expo-google-fonts/caveat'
 
-import { PreferencesProvider, GenderMode } from '@/context/PreferencesContext'
+import { PreferencesProvider } from '@/context/PreferencesContext'
 import { initDatabase } from '@/db/helpers'
 
 SplashScreen.preventAutoHideAsync()
@@ -14,7 +15,8 @@ export default function RootLayout() {
     const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null)
     
     const [fontsLoaded] = useFonts({
-        BorderWall: require("../assets/fonts/BorderWall-font.otf"),
+        BorderWall: require('../assets/fonts/BorderWall-font.otf'),
+        Caveat_400Regular,
     })
 
     useEffect(() => {
@@ -32,12 +34,12 @@ export default function RootLayout() {
     }, [])
 
     useEffect(() => {
-        if (fontsLoaded || dbReady) {
+        if (fontsLoaded && dbReady) {
             SplashScreen.hideAsync()
         }
     }, [fontsLoaded, dbReady])
 
-    if (!fontsLoaded && !dbReady) return null
+    if (!fontsLoaded || !dbReady) return null
 
     return (
         <PreferencesProvider>

@@ -21,7 +21,7 @@ export const Colors = {
 
 export const Fonts = {
   display: 'BorderWall',
-  body: 'CaveatBrush_400Regular',
+  body: 'Caveat_400Regular',
 }
 
 export const Spacing = {

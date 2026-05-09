@@ -158,9 +158,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.md,
     borderRadius: Radius.lg,
-    backgroundColor: '#FBF6DE',
-    // borderWidth: 1,
-    // borderColor: Colors.brand.border,`
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   logoBadge: {
     width: 46,
@@ -197,8 +195,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   navItemActive: {
-    backgroundColor: '#FCE3E3',
-    borderColor: '#F3B7B7',
+    backgroundColor: 'rgba(241, 191, 152, 0.15)',
+    borderColor: Colors.brand.primary,
   },
   iconWrap: {
     width: 42,
@@ -206,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FBF6DE',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderWidth: 1,
     borderColor: Colors.brand.border,
   },
@@ -241,7 +239,6 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.brand.border,
   },
   settingsItem: {
-    backgroundColor: '#FBF6DE',
-    // borderColor: Colors.brand.border,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 })

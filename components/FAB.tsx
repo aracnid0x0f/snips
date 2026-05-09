@@ -7,17 +7,23 @@ import {
   Animated,
   Pressable,
 } from 'react-native'
-import { MaterialIcons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
+import { 
+  Plus, 
+  Scissors, 
+  Ruler, 
+  UserPlus, 
+  LayoutGrid 
+} from 'lucide-react-native'
 import { useFAB } from '@/context/FABContext'
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
 
 const FAB_OPTIONS = [
-  { id: 'cloth', label: 'Cloth', icon: 'content-cut' as const, route: '/cloths/create' },
-  { id: 'measurement', label: 'Measurement', icon: 'straighten' as const, route: '/customers' }, // Nav to customers to pick one
-  { id: 'customer', label: 'Customer', icon: 'person-add' as const, route: '/customers/create' },
-  { id: 'collection', label: 'Collection', icon: 'grid-view' as const, route: '/collections/create' },
+  { id: 'cloth', label: 'Cloth', icon: Scissors, route: '/cloths/create' },
+  { id: 'measurement', label: 'Measurement', icon: Ruler, route: '/customers' },
+  { id: 'customer', label: 'Customer', icon: UserPlus, route: '/customers/create' },
+  { id: 'collection', label: 'Collection', icon: LayoutGrid, route: '/collections/create' },
 ]
 
 export default function FAB() {
@@ -93,6 +99,8 @@ export default function FAB() {
               outputRange: [0, 0, 1],
             })
 
+            const Icon = option.icon
+
             return (
               <Animated.View
                 key={option.id}
@@ -114,10 +122,10 @@ export default function FAB() {
                   style={styles.optionIcon}
                   onPress={() => handleOptionPress(option.route)}
                 >
-                  <MaterialIcons
-                    name={option.icon}
+                  <Icon
                     size={20}
                     color={Colors.brand.text}
+                    strokeWidth={2}
                   />
                 </TouchableOpacity>
               </Animated.View>
@@ -131,7 +139,7 @@ export default function FAB() {
           style={styles.fabButton}
         >
           <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-            <MaterialIcons name="add" size={28} color="#FFFFFF" />
+            <Plus size={32} color="#FFFFFF" strokeWidth={2.5} />
           </Animated.View>
         </TouchableOpacity>
       </View>
@@ -153,7 +161,6 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: 'absolute',
-    padding: 20,
     bottom: 80,
     right: 0,
     alignItems: 'flex-end',
@@ -167,7 +174,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   optionLabel: {
-    backgroundColor: Colors.brand.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderWidth: 0.5,
     borderColor: Colors.brand.border,
     paddingHorizontal: Spacing.md,
@@ -182,14 +189,14 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontFamily: Fonts.body,
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.brand.text,
   },
   optionIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.brand.background,
+    backgroundColor: '#FFFFFF',
     borderWidth: 0.5,
     borderColor: Colors.brand.border,
     alignItems: 'center',
@@ -204,7 +211,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: Colors.brand.text, // Black as per prototype #1a1a1a
+    backgroundColor: Colors.brand.text,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,

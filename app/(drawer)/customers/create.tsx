@@ -6,35 +6,33 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
 } from 'react-native'
 import { useRouter } from 'expo-router'
-import { MaterialIcons } from '@expo/vector-icons'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import * as Haptics from 'expo-haptics'
+import { 
+  ArrowLeft, 
+  Save, 
+  Venus, 
+  Mars, 
+  UserRound, 
+  Baby 
+} from 'lucide-react-native'
 
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
 import { CreateCustomer } from '@/db/helpers'
 import TopBar from '@/components/TopBar'
 
-const GENDER_OPTIONS = [
-  { label: 'Women', value: 'female' },
-  { label: 'Men', value: 'male' },
-  { label: 'Both', value: 'both' },
-] as const
-
-const AGE_GROUP_OPTIONS = [
-  { label: 'Adult', value: 'adult' },
-  { label: 'Child', value: 'child' },
-] as const
+type Gender = 'female' | 'male'
+type AgeGroup = 'adult' | 'child'
 
 export default function CreateCustomerPage() {
   const router = useRouter()
   
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [gender, setGender] = useState<(typeof GENDER_OPTIONS)[number]['value']>('female')
-  const [ageGroup, setAgeGroup] = useState<(typeof AGE_GROUP_OPTIONS)[number]['value']>('adult')
+  const [gender, setGender] = useState<Gender>('female')
+  const [ageGroup, setAgeGroup] = useState<AgeGroup>('adult')
 
   function handleCreateCustomer() {
     const trimmedName = name.trim()
@@ -46,7 +44,7 @@ export default function CreateCustomerPage() {
     }
 
     try {
-      const id = Number(CreateCustomer(trimmedName, trimmedPhone, gender as any, ageGroup))
+      const id = Number(CreateCustomer(trimmedName, trimmedPhone, gender, ageGroup))
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       
       setName('')
@@ -70,7 +68,7 @@ export default function CreateCustomerPage() {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <MaterialIcons name="arrow-back" size={24} color={Colors.brand.text} />
+          <ArrowLeft size={28} color={Colors.brand.text} />
         </TouchableOpacity>
         <Text style={styles.title}>New Customer</Text>
       </View>
@@ -99,64 +97,48 @@ export default function CreateCustomerPage() {
             style={styles.input}
           />
 
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Gender mode</Text>
-            <View style={styles.pillRow}>
-              {GENDER_OPTIONS.map((option) => (
+          <View style={styles.selectorsRow}>
+            <View style={styles.selectorGroup}>
+              {(['female', 'male'] as const).map((option) => (
                 <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.pill,
-                    gender === option.value && styles.pillSelected,
-                  ]}
+                  key={option}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                    setGender(option.value)
+                    setGender(option)
                   }}
+                  style={[styles.selectorBtn, gender === option && styles.selectorBtnActive]}
                 >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      gender === option.value && styles.pillTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
+                  {option === 'female' ? (
+                    <Venus size={24} color={gender === option ? Colors.brand.background : Colors.brand.text} />
+                  ) : (
+                    <Mars size={24} color={gender === option ? Colors.brand.background : Colors.brand.text} />
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Age group</Text>
-            <View style={styles.pillRow}>
-              {AGE_GROUP_OPTIONS.map((option) => (
+            <View style={styles.selectorGroup}>
+              {(['adult', 'child'] as const).map((option) => (
                 <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.pill,
-                    ageGroup === option.value && styles.pillSelected,
-                  ]}
+                  key={option}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                    setAgeGroup(option.value)
+                    setAgeGroup(option)
                   }}
+                  style={[styles.selectorBtn, ageGroup === option && styles.selectorBtnActive]}
                 >
-                  <Text
-                    style={[
-                      styles.pillText,
-                      ageGroup === option.value && styles.pillTextSelected,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
+                  {option === 'adult' ? (
+                    <UserRound size={24} color={ageGroup === option ? Colors.brand.background : Colors.brand.text} />
+                  ) : (
+                    <Baby size={24} color={ageGroup === option ? Colors.brand.background : Colors.brand.text} />
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           <TouchableOpacity style={styles.primaryButton} onPress={handleCreateCustomer}>
-            <Text style={styles.primaryButtonText}>Create Customer →</Text>
+            <Save size={28} color="#FFFFFF" strokeWidth={2.5} />
+            <Text style={styles.primaryButtonText}>Create Customer</Text>
           </TouchableOpacity>
         </View>
         
@@ -185,7 +167,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 28,
+    fontSize: 32,
     color: Colors.brand.text,
   },
   content: {
@@ -195,75 +177,64 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   card: {
-    backgroundColor: '#FBF6DE',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderWidth: 1,
     borderColor: Colors.brand.border,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    gap: Spacing.md,
+    gap: Spacing.lg,
   },
   input: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: Colors.brand.border,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: '#F6EFD2', 
-    fontSize: 16,
+    minHeight: 56,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.brand.border,
+    fontSize: 22,
     color: Colors.brand.text,
     fontFamily: Fonts.body,
+    paddingVertical: Spacing.xs,
   },
-  fieldGroup: {
-    gap: Spacing.sm,
-  },
-  fieldLabel: {
-    fontFamily: Fonts.body,
-    fontSize: 18,
-    color: Colors.brand.text,
-  },
-  pillRow: {
+  selectorsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.md,
+  },
+  selectorGroup: {
+    flexDirection: 'row',
     gap: Spacing.sm,
   },
-  pill: {
+  selectorBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: Radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: Colors.brand.border,
-    borderRadius: Radius.full,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: '#FFFBEF',
   },
-  pillSelected: {
+  selectorBtnActive: {
     backgroundColor: Colors.brand.text,
     borderColor: Colors.brand.text,
   },
-  pillText: {
-    fontFamily: Fonts.body,
-    fontSize: 18,
-    color: Colors.brand.text,
-  },
-  pillTextSelected: {
-    color: Colors.brand.background,
-  },
   primaryButton: {
-    marginTop: Spacing.xs,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.brand.text,
+    gap: Spacing.sm,
+    backgroundColor: '#166534', // Green for Save/Create
     borderRadius: Radius.md,
-    minHeight: 50,
-    paddingHorizontal: Spacing.lg,
+    minHeight: 60,
+    marginTop: Spacing.md,
   },
   primaryButtonText: {
     fontFamily: Fonts.body,
-    fontSize: 20,
+    fontSize: 22,
     color: '#FFFFFF',
   },
   hint: {
     fontFamily: Fonts.body,
-    fontSize: 16,
+    fontSize: 18,
     color: 'rgba(0,0,0,0.4)',
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,

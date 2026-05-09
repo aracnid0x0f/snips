@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
 import { useNavigation, DrawerActions } from '@react-navigation/native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Menu } from 'lucide-react-native'
 import { Colors, Fonts, Spacing } from '@/constants/theme'
 import { Image } from 'react-native'
 
@@ -40,9 +41,7 @@ export default function TopBar({
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
           style={styles.hamburger}
         >
-          <View style={styles.line} />
-          <View style={styles.line} />
-          <View style={styles.line} />
+          <Menu size={28} color={Colors.brand.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -73,7 +72,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     flex: 1,
-    backgroundColor: Colors.brand.border,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderRadius: 24,
     minHeight: 48,
     justifyContent: 'center',
@@ -81,18 +80,11 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     fontFamily: Fonts.body,
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.brand.text,
     padding: 0,
   },
   hamburger: {
-    gap: 5,
-    padding: Spacing.sm,
-  },
-  line: {
-    width: 24,
-    height: 2.5,
-    backgroundColor: Colors.brand.text,
-    borderRadius: 2,
+    padding: Spacing.xs,
   },
 })

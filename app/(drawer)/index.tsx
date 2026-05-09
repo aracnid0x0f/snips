@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#FBF6DE',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderWidth: 1,
     borderColor: Colors.brand.border,
     borderRadius: Radius.lg,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     padding: Spacing.xl,
     gap: Spacing.sm,
-    backgroundColor: 'rgba(255, 251, 239, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   emptyTitle: {
     fontFamily: Fonts.display,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    backgroundColor: '#FFFBEF',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
     borderColor: Colors.brand.border,
     borderRadius: Radius.lg,

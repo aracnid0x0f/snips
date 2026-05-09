@@ -11,6 +11,15 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import * as Haptics from 'expo-haptics'
+import { 
+  Save, 
+  Trash2, 
+  UserRound, 
+  Baby, 
+  Venus, 
+  Mars, 
+  PlusCircle 
+} from 'lucide-react-native'
 
 import DrawerScreen from '@/components/DrawerScreen'
 import MeasurementField from '@/components/MeasurementField'
@@ -83,7 +92,6 @@ export default function CustomerProfile() {
     
     setMeasurements(nextMeasurements)
     
-    // Build initial inputs
     const fields = nextCustomer.gender === 'female' ? FEMALE_FIELDS : MALE_FIELDS
     const initialInputs: Record<string, string> = {}
     fields.forEach(f => {
@@ -124,7 +132,6 @@ export default function CustomerProfile() {
     const value = measurementInputs[key].trim()
     const numericValue = value === '' ? null : Number(value)
 
-    // Only update if value changed to save DB cycles
     if (measurements?.[key] === numericValue) return
 
     upsertMeasurment(table, customer.id, { [key]: numericValue })
@@ -168,37 +175,78 @@ export default function CustomerProfile() {
       >
         {/* Profile Card */}
         <View style={styles.card}>
-          <TextInput
-            value={customerNameInput}
-            onChangeText={setCustomerNameInput}
-            style={styles.nameInput}
-            placeholder="Name"
-          />
-          <TextInput
-            value={customerPhoneInput}
-            onChangeText={setCustomerPhoneInput}
-            style={styles.phoneInput}
-            placeholder="Phone"
-            keyboardType="phone-pad"
-          />
-          <View style={styles.headerPills}>
+          <View style={styles.headerRow}>
+            <View style={{ flex: 1 }}>
+              <TextInput
+                value={customerNameInput}
+                onChangeText={setCustomerNameInput}
+                style={styles.nameInput}
+                placeholder="Name"
+              />
+              <TextInput
+                value={customerPhoneInput}
+                onChangeText={setCustomerPhoneInput}
+                style={styles.phoneInput}
+                placeholder="Phone"
+                keyboardType="phone-pad"
+              />
+            </View>
             <TouchableOpacity 
               onPress={handleSaveCustomerDetails}
-              style={styles.saveBtn}
+              style={styles.iconActionBtn}
             >
-              <Text style={styles.saveBtnText}>Save Profile</Text>
+              <Save size={28} color="#166534" strokeWidth={2.5} />
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.selectorsRow}>
+            <View style={styles.selectorGroup}>
+              {(['female', 'male'] as const).map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                    setCustomerGenderInput(option)
+                  }}
+                  style={[styles.selectorBtn, customerGenderInput === option && styles.selectorBtnActive]}
+                >
+                  {option === 'female' ? (
+                    <Venus size={22} color={customerGenderInput === option ? Colors.brand.background : Colors.brand.text} />
+                  ) : (
+                    <Mars size={22} color={customerGenderInput === option ? Colors.brand.background : Colors.brand.text} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.selectorGroup}>
+              {(['adult', 'child'] as const).map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                    setCustomerAgeGroupInput(option)
+                  }}
+                  style={[styles.selectorBtn, customerAgeGroupInput === option && styles.selectorBtnActive]}
+                >
+                  {option === 'adult' ? (
+                    <UserRound size={22} color={customerAgeGroupInput === option ? Colors.brand.background : Colors.brand.text} />
+                  ) : (
+                    <Baby size={22} color={customerAgeGroupInput === option ? Colors.brand.background : Colors.brand.text} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
         {/* Measurement Section */}
         <View style={styles.card}>
-          <Text style={styles.sectionLabel}>Measurements ({customer.gender})</Text>
+          <Text style={styles.sectionLabel}>Measurements</Text>
           <View style={styles.measurementList}>
             {sortedFields.map((field, index) => (
               <MeasurementField
                 key={field.key}
-                ref={el => (inputRefs.current[field.key] = el)}
+                ref={(el) => (inputRefs.current[field.key] = el)}
                 label={field.label}
                 value={measurementInputs[field.key]}
                 onChangeText={val => handleMeasurementChange(field.key, val)}
@@ -212,7 +260,12 @@ export default function CustomerProfile() {
 
         {/* Cloths Section */}
         <View style={styles.card}>
-          <Text style={styles.sectionLabel}>Cloths</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.sectionLabel}>Cloths</Text>
+            <TouchableOpacity onPress={() => router.push('/cloths/create')}>
+              <PlusCircle size={28} color={Colors.brand.primary} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
           {cloths.map(cloth => (
             <TouchableOpacity key={cloth.id} style={styles.clothRow} onPress={() => router.push(`/(drawer)/cloths/${cloth.id}`)}>
               <Text style={styles.clothTitle}>{cloth.title}</Text>
@@ -221,12 +274,10 @@ export default function CustomerProfile() {
               </View>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.addClothBtn} onPress={() => router.push('/cloths/create')}>
-            <Text style={styles.addClothText}>+ New Cloth</Text>
-          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteCustomer}>
+        <TouchableOpacity style={styles.deleteIconButton} onPress={handleDeleteCustomer}>
+          <Trash2 size={24} color="#E43636" strokeWidth={2} />
           <Text style={styles.deleteBtnText}>Delete Customer</Text>
         </TouchableOpacity>
       </KeyboardAwareScrollView>
@@ -241,34 +292,75 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   card: {
-    backgroundColor: '#FBF6DE',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.brand.border,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
   nameInput: {
     fontFamily: Fonts.display,
-    fontSize: 32,
+    fontSize: 40,
     color: Colors.brand.text,
-    marginBottom: Spacing.xs,
+    marginBottom: 0,
   },
   phoneInput: {
     fontFamily: Fonts.body,
-    fontSize: 18,
-    color: 'rgba(0,0,0,0.6)',
+    fontSize: 22,
+    color: Colors.brand.secondary,
     marginBottom: Spacing.md,
+  },
+  iconActionBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.brand.border,
+  },
+  selectorsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing.sm,
+    borderTopWidth: 0.5,
+    borderTopColor: Colors.brand.border,
+    paddingTop: Spacing.md,
+  },
+  selectorGroup: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  selectorBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: Radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.brand.border,
+  },
+  selectorBtnActive: {
+    backgroundColor: Colors.brand.text,
+    borderColor: Colors.brand.text,
   },
   sectionLabel: {
     fontFamily: Fonts.body,
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.4)',
+    fontSize: 18,
+    color: Colors.brand.secondary,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: Spacing.md,
+    letterSpacing: 1.5,
   },
   measurementList: {
-    marginTop: -Spacing.md,
+    marginTop: Spacing.xs,
   },
   clothRow: {
     flexDirection: 'row',
@@ -280,50 +372,29 @@ const styles = StyleSheet.create({
   },
   clothTitle: {
     fontFamily: Fonts.body,
-    fontSize: 18,
+    fontSize: 22,
     color: Colors.brand.text,
   },
   statusPill: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   statusText: {
     fontFamily: Fonts.body,
-    fontSize: 12,
+    fontSize: 14,
     textTransform: 'uppercase',
   },
-  addClothBtn: {
-    marginTop: Spacing.md,
-    alignItems: 'center',
-  },
-  addClothText: {
-    fontFamily: Fonts.body,
-    fontSize: 16,
-    color: Colors.brand.primary,
-  },
-  saveBtn: {
-    backgroundColor: Colors.brand.text,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
-  },
-  saveBtnText: {
-    fontFamily: Fonts.body,
-    color: Colors.brand.background,
-    fontSize: 14,
-  },
-  headerPills: {
+  deleteIconButton: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  deleteBtn: {
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
     padding: Spacing.md,
   },
   deleteBtnText: {
     fontFamily: Fonts.body,
     color: '#E43636',
-    fontSize: 16,
+    fontSize: 18,
   },
 })

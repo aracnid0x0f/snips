@@ -1,7 +1,7 @@
 import React from 'react'
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
-import { MaterialIcons } from '@expo/vector-icons'
+import { ArrowLeft, Save } from 'lucide-react-native'
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
 import TopBar from '@/components/TopBar'
 
@@ -17,13 +17,21 @@ export default function CreateClothPage() {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <MaterialIcons name="arrow-back" size={24} color={Colors.brand.text} />
+          <ArrowLeft size={28} color={Colors.brand.text} />
         </TouchableOpacity>
         <Text style={styles.title}>New Cloth</Text>
       </View>
 
       <View style={styles.content}>
         <Text style={styles.placeholder}>Cloth creation flow coming soon...</Text>
+        
+        <TouchableOpacity 
+          style={styles.primaryButton}
+          onPress={() => console.log('Save cloth')}
+        >
+          <Save size={28} color="#FFFFFF" strokeWidth={2.5} />
+          <Text style={styles.primaryButtonText}>Save Cloth</Text>
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -46,7 +54,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 28,
+    fontSize: 32,
     color: Colors.brand.text,
   },
   content: {
@@ -55,10 +63,26 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: Spacing.xl,
   },
   placeholder: {
     fontFamily: Fonts.body,
-    fontSize: 18,
+    fontSize: 22,
     color: Colors.brand.text,
+  },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: '#166534',
+    borderRadius: Radius.md,
+    minHeight: 60,
+    width: '100%',
+  },
+  primaryButtonText: {
+    fontFamily: Fonts.body,
+    fontSize: 22,
+    color: '#FFFFFF',
   },
 })

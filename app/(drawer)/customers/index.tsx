@@ -11,7 +11,14 @@ import {
 import { router } from 'expo-router'
 import { useFocusEffect } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { MaterialIcons } from '@expo/vector-icons'
+import { 
+  Contact, 
+  ChevronUp, 
+  ChevronDown, 
+  PlusCircle, 
+  Venus, 
+  Mars 
+} from 'lucide-react-native'
 
 import DrawerScreen from '@/components/DrawerScreen'
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme'
@@ -25,8 +32,8 @@ type CustomerRecord = {
   id: number
   name: string
   phone: string | null
-  gender: string
-  age_group: string
+  gender: 'female' | 'male'
+  age_group: 'adult' | 'child'
 }
 
 type ClothRecord = {
@@ -77,7 +84,6 @@ export default function Customers() {
       setExpandedId(null)
     } else {
       setExpandedId(id)
-      // Fetch cloths for this customer if not already fetched or to refresh
       const cloths = GetClothByCustomer(id) as ClothRecord[]
       const onlyActive = cloths.filter(c => c.status !== 'ready')
       setPlatformActiveCloths(prev => ({ ...prev, [id]: onlyActive }))
@@ -124,22 +130,29 @@ export default function Customers() {
                 >
                   <View style={styles.customerText}>
                     <Text style={styles.customerName}>{customer.name}</Text>
-                    <Text style={styles.customerMeta}>
-                      {formatMeta(customer.gender, customer.age_group, customer.phone)}
-                    </Text>
+                    <View style={styles.metaRow}>
+                       {customer.gender === 'female' ? (
+                         <Venus size={16} color={Colors.brand.secondary} />
+                       ) : (
+                         <Mars size={16} color={Colors.brand.secondary} />
+                       )}
+                      <Text style={styles.customerMeta}>
+                        {formatMeta(customer.gender, customer.age_group, customer.phone)}
+                      </Text>
+                    </View>
                   </View>
                   <View style={styles.rowActions}>
                     <TouchableOpacity 
                         onPress={() => router.push(`/(drawer)/customers/${customer.id}`)}
-                        style={styles.profileBtn}
+                        style={styles.iconCircleBtn}
                     >
-                        <Text style={styles.profileBtnText}>Profile</Text>
+                        <Contact size={26} color={Colors.brand.text} strokeWidth={1.5} />
                     </TouchableOpacity>
-                    <MaterialIcons 
-                        name={expandedId === customer.id ? "expand-less" : "expand-more"} 
-                        size={24} 
-                        color={Colors.brand.text} 
-                    />
+                    {expandedId === customer.id ? (
+                      <ChevronUp size={28} color={Colors.brand.text} />
+                    ) : (
+                      <ChevronDown size={28} color={Colors.brand.text} />
+                    )}
                   </View>
                 </TouchableOpacity>
 
@@ -168,7 +181,8 @@ export default function Customers() {
                       style={styles.addClothSmall}
                       onPress={() => router.push('/cloths/create')}
                     >
-                      <Text style={styles.addClothSmallText}>+ New Cloth</Text>
+                      <PlusCircle size={24} color={Colors.brand.primary} strokeWidth={2} />
+                      <Text style={styles.addClothSmallText}>New Cloth</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -182,7 +196,7 @@ export default function Customers() {
 }
 
 function formatMeta(gender: string, ageGroup: string, phone: string | null) {
-  const parts = [capitalize(gender), capitalize(ageGroup)]
+  const parts = [capitalize(ageGroup)]
   if (phone) parts.push(phone)
   return parts.join(' • ')
 }
@@ -198,7 +212,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: Fonts.display,
-    fontSize: 24,
+    fontSize: 28,
     color: Colors.brand.text,
   },
   listHeader: {
@@ -209,8 +223,8 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontFamily: Fonts.body,
-    fontSize: 18,
-    color: 'rgba(0, 0, 0, 0.7)',
+    fontSize: 20,
+    color: Colors.brand.secondary,
   },
   emptyState: {
     borderWidth: 1,
@@ -219,23 +233,23 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     padding: Spacing.xl,
     gap: Spacing.sm,
-    backgroundColor: 'rgba(255, 251, 239, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   emptyTitle: {
     fontFamily: Fonts.display,
-    fontSize: 24,
+    fontSize: 26,
     color: Colors.brand.text,
   },
   emptyBody: {
     fontFamily: Fonts.body,
-    fontSize: 20,
+    fontSize: 22,
     color: Colors.brand.text,
   },
   list: {
     gap: Spacing.md,
   },
   customerCard: {
-    backgroundColor: '#FFFBEF',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderWidth: 1,
     borderColor: Colors.brand.border,
     borderRadius: Radius.lg,
@@ -249,49 +263,44 @@ const styles = StyleSheet.create({
   },
   customerText: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: 4,
   },
   customerName: {
     fontFamily: Fonts.display,
-    fontSize: 26,
+    fontSize: 30,
     color: Colors.brand.text,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   customerMeta: {
     fontFamily: Fonts.body,
-    fontSize: 18,
-    color: 'rgba(0, 0, 0, 0.6)',
+    fontSize: 20,
+    color: Colors.brand.secondary,
   },
   rowActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
-  profileBtn: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
-    borderWidth: 0.5,
-    borderColor: Colors.brand.border,
-  },
-  profileBtnText: {
-    fontFamily: Fonts.body,
-    fontSize: 16,
-    color: Colors.brand.text,
+  iconCircleBtn: {
+    padding: 4,
   },
   expandedContent: {
     padding: Spacing.lg,
     paddingTop: 0,
     borderTopWidth: 0.5,
-    borderTopColor: 'rgba(226, 221, 180, 0.5)',
-    backgroundColor: 'rgba(251, 246, 222, 0.4)',
+    borderTopColor: Colors.brand.border,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   subLabel: {
     fontFamily: Fonts.body,
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.4)',
+    fontSize: 16,
+    color: Colors.brand.secondary,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
   },
@@ -299,38 +308,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(226, 221, 180, 0.8)',
   },
   clothTitle: {
     fontFamily: Fonts.body,
-    fontSize: 18,
+    fontSize: 22,
     color: Colors.brand.text,
   },
   statusPill: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   statusText: {
     fontFamily: Fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
   },
   emptySubText: {
     fontFamily: Fonts.body,
-    fontSize: 16,
-    color: 'rgba(0,0,0,0.3)',
+    fontSize: 18,
+    color: Colors.brand.secondary,
     fontStyle: 'italic',
   },
   addClothSmall: {
     marginTop: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     alignSelf: 'flex-start',
   },
   addClothSmallText: {
     fontFamily: Fonts.body,
-    fontSize: 16,
+    fontSize: 20,
     color: Colors.brand.primary,
   }
 })
